@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Seguimiento de asignación a proveedores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Concepto: ficha de proyecto con el tono de un tablero de operaciones. Índigo profundo como base, magenta y naranja solo para series de datos. */
+:root{
+  --bg:#f5f5fa; --surface:#ffffff; --fg:#1b1840; --muted:#615f82; --line:#dedcee; --soft:#ecebf7;
+  --s1:#2a2478; --s2:#e0356f; --s3:#f59a3a;
+  --on-s1:#ffffff; --on-s2:#ffffff; --on-s3:#2a1a00;
+  --crit:#b42323; --crit-bg:#fde8e8; --warn:#8a4b00; --warn-bg:#fff0d9; --ok:#17734a; --ok-bg:#e1f5ea;
+  --display:"IBM Plex Sans Condensed","IBM Plex Sans","Segoe UI",Arial,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f0e22; --surface:#17163a; --fg:#ecebfa; --muted:#a3a1c8; --line:#2b2958; --soft:#1f1d4a;
+    --s1:#7d74ee; --s2:#ff6b9a; --s3:#ffb15c;
+    --on-s1:#0f0e22; --on-s2:#2a0614; --on-s3:#2a1a00;
+    --crit:#ff9b9b; --crit-bg:#3a1630; --warn:#ffc984; --warn-bg:#3b2a12; --ok:#7fe0aa; --ok-bg:#12332a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f0e22; --surface:#17163a; --fg:#ecebfa; --muted:#a3a1c8; --line:#2b2958; --soft:#1f1d4a;
+  --s1:#7d74ee; --s2:#ff6b9a; --s3:#ffb15c;
+  --on-s1:#0f0e22; --on-s2:#2a0614; --on-s3:#2a1a00;
+  --crit:#ff9b9b; --crit-bg:#3a1630; --warn:#ffc984; --warn-bg:#3b2a12; --ok:#7fe0aa; --ok-bg:#12332a;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.6;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+.wrap{max-width:1040px;margin:0 auto;padding-block:40px 56px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.15;letter-spacing:-.005em}
+h1{font-size:clamp(30px,5vw,46px);font-weight:700}
+h2{font-size:clamp(22px,3vw,28px);font-weight:700}
+h3{font-size:19px;font-weight:600}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.lead{font-size:17px;max-width:62ch;color:var(--fg);margin-top:14px}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 28px;margin-top:28px;padding-top:20px;border-top:1px solid var(--line)}
+.meta dt{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.meta dd{margin:2px 0 0;font-weight:500}
+section{margin-top:56px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:18px}
+.cols p{max-width:60ch;color:var(--fg)}
+.cols .k{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.view{margin-top:22px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.view-head{padding:20px 22px 0;display:flex;flex-direction:column;gap:8px}
+.chip{align-self:flex-start;font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:99px;background:var(--soft);color:var(--fg)}
+.q{color:var(--muted);max-width:62ch}
+.view-body{display:grid;grid-template-columns:minmax(0,1fr);gap:22px;padding:20px 22px 22px}
+.side h4{margin:0 0 8px;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.side{border-top:1px solid var(--line);padding-top:16px}
+.side ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px 24px}
+.side li{max-width:46ch;font-size:14px}
+.mock{min-width:0}
+.mock-label{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:13.5px}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;font-weight:500;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+td.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-block;font-family:var(--mono);font-size:12px;padding:1px 8px;border-radius:99px;font-variant-numeric:tabular-nums}
+.p-crit{background:var(--crit-bg);color:var(--crit)}
+.p-warn{background:var(--warn-bg);color:var(--warn)}
+.p-ok{background:var(--ok-bg);color:var(--ok)}
+.utp{font-family:var(--mono);font-size:12px}
+.fbar{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.fbar i{display:block;height:6px;border-radius:3px;background:var(--s1);opacity:.85}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-bottom:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend b{display:inline-block;width:10px;height:10px;border-radius:2px}
+.s1{background:var(--s1);color:var(--on-s1)} .s2{background:var(--s2);color:var(--on-s2)} .s3{background:var(--s3);color:var(--on-s3)}
+.months{position:relative;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px;height:190px;padding-bottom:22px}
+.months .col{display:flex;flex-direction:column;position:relative;height:100%}
+.months .stack{flex:1;display:flex;flex-direction:column;border-radius:4px;overflow:hidden}
+.months .seg{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-variant-numeric:tabular-nums}
+.months .lab{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.half{position:absolute;left:0;right:0;top:calc((100% - 22px) / 2);border-top:1.5px dashed var(--fg);opacity:.55;pointer-events:none}
+.half em{position:absolute;right:0;top:-18px;font-style:normal;font-family:var(--mono);font-size:10.5px;background:var(--surface);padding:0 4px;color:var(--muted)}
+.hbars{display:flex;flex-direction:column;gap:8px}
+.hrow{display:grid;grid-template-columns:130px minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:13px}
+.hrow .t{height:12px;background:var(--soft);border-radius:3px;overflow:hidden;display:flex}
+.hrow .t i{display:block;height:100%}
+.hrow .v{font-family:var(--mono);font-size:12px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.two{display:grid;grid-template-columns:1fr;gap:26px}
+.kpis{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center;margin-bottom:22px}
+.gauge{position:relative;width:150px;padding-top:18px}
+.gauge svg{display:block;width:100%}
+.gauge .val{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-family:var(--display);font-weight:700;font-size:26px;line-height:1}
+.gauge .cap{position:absolute;left:0;right:0;top:-2px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.06em}
+.tiles{display:flex;gap:12px;flex-wrap:wrap}
+.tile{background:var(--soft);border-radius:8px;padding:10px 14px;min-width:120px}
+.tile b{display:block;font-family:var(--display);font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.tile span{font-size:12px;color:var(--muted)}
+.weeks{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;height:190px;padding-bottom:22px}
+.weeks .col{display:flex;flex-direction:column;justify-content:flex-end;position:relative;height:100%;align-items:stretch}
+.weeks .tot{text-align:center;font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:2px}
+.weeks .stk{display:flex;flex-direction:column;border-radius:4px;overflow:hidden}
+.weeks .seg{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;min-height:0}
+.weeks .lab{position:absolute;bottom:-20px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.otdrow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-top:4px}
+.otdrow span{text-align:center;font-family:var(--mono);font-size:11px;color:var(--ok)}
+.result{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:18px}
+.res{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.res h3{font-size:17px;margin-bottom:6px}
+.res p{color:var(--muted);font-size:14px}
+.apply{margin-top:18px;border-left:3px solid var(--s1);padding:4px 0 4px 16px;max-width:70ch}
+.apply .k{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.note{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);max-width:80ch}
+.next{margin-top:10px}
+@media (max-width:820px){
+  .cols{grid-template-columns:1fr}
+  .result{grid-template-columns:1fr}
+}
+@media (max-width:480px){
+  .wrap{padding-block:28px 40px}
+  .view-head,.view-body{padding-left:16px;padding-right:16px}
+  .hrow{grid-template-columns:96px minmax(0,1fr) 40px}
+  .kpis{grid-template-columns:1fr}
+  .months{gap:3px}
+  .months .seg{font-size:9.5px}
+}
+</style>
+</head>
+<body>
+
+<style>.back{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-decoration:none;margin-bottom:18px}.back:hover{color:var(--fg)}html{background:var(--bg)}body{margin:0}</style>
+
+
+<div class="wrap">
+  <a class="back" href="index.html">← Portafolio</a>
+  <header>
+    <div class="eyebrow">Portafolio · Iván Flores Morales</div>
+    <h1 style="margin-top:12px">Seguimiento de asignación a proveedores de transporte</h1>
+    <p class="lead">Reportes en Power BI y Excel para repartir los servicios de forma equitativa entre proveedores de Paita, incluidos los asociados a la Unión de Transportistas de Paita (UTP), y hacerle seguimiento al nivel de servicio.</p>
+    <dl class="meta">
+      <div><dt>Empresa</dt><dd>DP World Logistics, Paita</dd></div>
+      <div><dt>Mi rol</dt><dd>Diseño y desarrollo de los reportes</dd></div>
+      <div><dt>Herramientas</dt><dd>Power BI, Excel, Power Query, DAX</dd></div>
+      <div><dt>Quiénes lo usan</dt><dd>Planner de transporte, asignación de unidades, gerencia</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <h2>El problema y lo que armé</h2>
+    <div class="cols">
+      <div>
+        <div class="k">Problema</div>
+        <p>En Paita se exige que los viajes se repartan con equidad, y la UTP lo pide de forma constante. Pero no existía una manera de darle seguimiento: era difícil saber quién llevaba días sin servicio, quién concentraba la carga y si el reparto entre asociados y no asociados era parejo.</p>
+      </div>
+      <div>
+        <div class="k">Solución</div>
+        <p>Tres vistas, cada una para quien la necesita. Una hoja operativa para decidir a quién asignar, una vista de distribución y facturación para gerencia y un reporte de nivel de servicio para el equipo.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Las vistas</h2>
+
+    <article class="view">
+      <div class="view-head">
+        <span class="chip">Uso operativo diario · quien asigna unidades</span>
+        <h3>Control y equidad</h3>
+        <p class="q">¿A quién le corresponde el siguiente servicio?</p>
+      </div>
+      <div class="view-body">
+        <div class="mock">
+          <div class="mock-label">Ejemplo · ordenado por días sin servicio</div>
+          <div class="scroll">
+            <table>
+              <thead><tr><th>Proveedor</th><th>Lista UTP</th><th class="n">Servicios</th><th class="n">Días sin servicio</th><th class="n">Última asignación</th><th class="n">Fact. acumulada (S/)</th></tr></thead>
+              <tbody id="tbl"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="side">
+          <h4>Cómo se usa</h4>
+          <ul>
+            <li>Combina tres variables: los últimos viajes, los días sin servicio y lo facturado acumulado.</li>
+            <li>Quien asigna ve primero a los proveedores que llevan más días sin trabajar y tienen menos facturación.</li>
+            <li>Empezó como un Excel de uso diario y la planner de transporte lo validó.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <article class="view">
+      <div class="view-head">
+        <span class="chip">Gerencia</span>
+        <h3>Distribución</h3>
+        <p class="q">¿El reparto y la facturación se mantienen parejos entre proveedores y entre asociados y no asociados?</p>
+      </div>
+      <div class="view-body">
+        <div class="mock two">
+          <div>
+            <div class="mock-label">Ejemplo · servicios por mes según lista UTP</div>
+            <div class="legend"><span><b class="s2"></b>UTP: Sí</span><span><b class="s1"></b>UTP: No</span></div>
+            <div class="months" id="months"><div class="half"><em>50 %</em></div></div>
+          </div>
+          <div>
+            <div class="mock-label">Ejemplo · monto liquidado por mes según lista UTP (miles de S/)</div>
+            <div class="legend"><span><b class="s2"></b>UTP: Sí</span><span><b class="s1"></b>UTP: No</span></div>
+            <div class="weeks bill" id="bill"></div>
+          </div>
+          <div>
+            <div class="mock-label">Ejemplo · participación por proveedor (% de servicios)</div>
+            <div class="hbars" id="share"></div>
+          </div>
+        </div>
+        <div class="side">
+          <h4>Cómo se usa</h4>
+          <ul>
+            <li>Muestra mes a mes qué parte de los servicios fue a proveedores de la lista UTP y qué parte a los demás.</li>
+            <li>Permite ver si algún proveedor concentra carga, y cómo se reparten los servicios por zona.</li>
+            <li>Incluye el monto liquidado a proveedores asociados y no asociados, para comparar la facturación entre ambos grupos.</li>
+            <li>Sirve de evidencia cuando hay que explicar cómo se está distribuyendo.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+
+    <article class="view">
+      <div class="view-head">
+        <span class="chip">Equipo interno</span>
+        <h3>Nivel de servicio</h3>
+        <p class="q">¿Cómo vamos con el OTD, por cliente y por tipo de carga?</p>
+      </div>
+      <div class="view-body">
+        <div class="mock">
+          <div class="kpis">
+            <div class="gauge">
+              <div class="cap">OTD</div>
+              <svg viewBox="0 0 140 76" aria-hidden="true">
+                <path d="M10 70 A60 60 0 0 1 130 70" pathLength="100" fill="none" stroke="var(--soft)" stroke-width="14" stroke-linecap="butt"/>
+                <path d="M10 70 A60 60 0 0 1 130 70" pathLength="100" fill="none" stroke="var(--s1)" stroke-width="14" stroke-linecap="butt" stroke-dasharray="98.7 100"/>
+              </svg>
+              <div class="val">98,7 %</div>
+            </div>
+            <div class="tiles">
+              <div class="tile"><b>312</b><span>servicios en el mes</span></div>
+              <div class="tile"><b>4</b><span>entregas tardías</span></div>
+            </div>
+          </div>
+          <div class="mock-label">Ejemplo · servicios por semana y tipo de carga</div>
+          <div class="legend"><span><b class="s3"></b>Seca</span><span><b class="s1"></b>Refrigerada</span></div>
+          <div class="weeks" id="weeks"></div>
+          <div class="otdrow" id="otdrow"></div>
+          <div class="mock-label" style="margin-top:26px">Ejemplo · servicios por cliente</div>
+          <div class="legend"><span><b class="s1"></b>A tiempo</span><span><b class="s2"></b>Tardío</span></div>
+          <div class="hbars" id="clients"></div>
+        </div>
+        <div class="side">
+          <h4>Cómo se usa</h4>
+          <ul>
+            <li>El indicador principal es el OTD, con filtros por semana, cliente, transporte, depósito y tipo de carga.</li>
+            <li>El equipo lo revisa para ver dónde se concentran las entregas tardías.</li>
+            <li>Se mantiene actualizado con múltiples fuentes de datos.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section>
+    <h2>Qué cambió</h2>
+    <div class="result">
+      <div class="res"><h3>Hay seguimiento</h3><p>Antes no había forma de darle seguimiento a la asignación. Ahora se revisa todos los días.</p></div>
+      <div class="res"><h3>Reparto parejo sostenido</h3><p>La distribución se mantiene homogénea entre proveedores y entre asociados y no asociados.</p></div>
+      <div class="res"><h3>Uso real</h3><p>La hoja operativa fue validada por la planner de transporte y guía el trabajo de asignación.</p></div>
+    </div>
+    <div class="apply">
+      <div class="k">Aplicable al área de logística</div>
+      <p>Criterios objetivos y a la vista para repartir carga entre proveedores, y un seguimiento simple que cualquiera del equipo pueda revisar.</p>
+    </div>
+  </section>
+
+  <p class="note">Los nombres de proveedores y clientes, y todas las cifras de esta página, son ficticios. Conservan la estructura y la lógica de los reportes reales.</p>
+  <p class="note next" style="border-top:0;margin-top:6px;padding-top:0">Siguientes proyectos: portal de validación para proveedores y app de plaqueo de ingreso de buses.</p>
+</div>
+
+<script>
+(function(){
+  var rows=[
+    ["Transportes Kappa E.I.R.L.","No",31,6,"13/10",14.2],
+    ["Transportes Delta S.A.C.","Sí",38,5,"14/10",18.9],
+    ["Transportes Zeta E.I.R.L.","No",36,3,"16/10",16.4],
+    ["Transportes Alfa S.A.C.","Sí",44,2,"17/10",21.7],
+    ["Transportes Eta E.I.R.L.","Sí",47,1,"18/10",23.0],
+    ["Transportes Theta S.A.C.","No",52,1,"18/10",25.8],
+    ["Transportes Gamma S.A.C.","Sí",55,0,"19/10",27.1],
+    ["Transportes Épsilon E.I.R.L.","No",58,0,"19/10",29.5]
+  ];
+  var maxF=30, tb=document.getElementById("tbl"), h="";
+  rows.forEach(function(r){
+    var d=r[3], cls=d>=5?"p-crit":(d>=3?"p-warn":"p-ok");
+    var w=Math.round(r[5]/maxF*70);
+    h+="<tr><td>"+r[0]+"</td><td class='utp'>"+r[1]+"</td><td class='n num'>"+r[2]+"</td>"+
+       "<td class='n'><span class='pill "+cls+"'>"+d+"</span></td><td class='n num'>"+r[4]+"</td>"+
+       "<td class='n num'><div class='fbar'><i style='width:"+w+"px'></i>"+(r[5]*1000).toLocaleString("es-PE",{maximumFractionDigits:0})+"</div></td></tr>";
+  });
+  tb.innerHTML=h;
+
+  var m=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Set","Oct"];
+  var si=[52,47,51,50,48,53,49,51,50,52];
+  var mo=document.getElementById("months");
+  m.forEach(function(n,i){
+    var c=document.createElement("div"); c.className="col";
+    c.innerHTML="<div class='stack'><div class='seg s2' style='flex:"+si[i]+"'>"+si[i]+"</div><div class='seg s1' style='flex:"+(100-si[i])+"'>"+(100-si[i])+"</div></div><div class='lab'>"+n+"</div>";
+    mo.appendChild(c);
+  });
+
+
+  var bs=[96,60,64,88,82,91,84,118,150,176], bn=[88,52,55,73,70,79,71,102,137,163], B=document.getElementById("bill");
+  var bmx=Math.max.apply(null,bs.map(function(v,i){return v+bn[i];}));
+  B.style.gridTemplateColumns="repeat(10,minmax(0,1fr))"; B.style.gap="6px";
+  m.forEach(function(n,i){
+    var t=bs[i]+bn[i], hh=Math.round(t/bmx*140);
+    var c=document.createElement("div"); c.className="col";
+    c.innerHTML="<div class='tot'>"+t+"</div><div class='stk' style='height:"+hh+"px'><div class='seg s2' style='flex:"+bs[i]+"'>"+(bs[i]>=70?bs[i]:"")+"</div><div class='seg s1' style='flex:"+bn[i]+"'>"+(bn[i]>=70?bn[i]:"")+"</div></div><div class='lab'>"+n+"</div>";
+    B.appendChild(c);
+  });
+
+  var sh=[["Transportes Alfa",2.9],["Transportes Delta",2.7],["Transportes Gamma",2.6],["Transportes Eta",2.5],["Transportes Kappa",2.4],["Transportes Theta",2.4],["Transportes Zeta",2.3],["Transportes Épsilon",2.2]];
+  var s=document.getElementById("share"), hs="";
+  sh.forEach(function(r){hs+="<div class='hrow'><div>"+r[0]+"</div><div class='t'><i class='s1' style='width:"+(r[1]/5*100)+"%'></i></div><div class='v'>"+r[1].toFixed(1).replace(".",",")+"</div></div>";});
+  s.innerHTML=hs;
+
+  var dry=[2,12,46,16,20,8], ref=[8,41,58,44,50,7], otd=["100 %","100 %","99 %","98 %","97 %","100 %"], wk=[31,32,33,34,35,36];
+  var mx=Math.max.apply(null,dry.map(function(v,i){return v+ref[i];})), W=document.getElementById("weeks"), O=document.getElementById("otdrow");
+  wk.forEach(function(w,i){
+    var t=dry[i]+ref[i], hh=Math.round(t/mx*140);
+    var c=document.createElement("div"); c.className="col";
+    c.innerHTML="<div class='tot'>"+t+"</div><div class='stk' style='height:"+hh+"px'><div class='seg s3' style='flex:"+dry[i]+"'>"+(dry[i]>=8?dry[i]:"")+"</div><div class='seg s1' style='flex:"+ref[i]+"'>"+(ref[i]>=8?ref[i]:"")+"</div></div><div class='lab'>S"+w+"</div>";
+    W.appendChild(c);
+    var sp=document.createElement("span"); sp.textContent=otd[i]; O.appendChild(sp);
+  });
+
+  var cl=[["Cliente A",119,1],["Cliente B",70,0],["Cliente C",47,1],["Cliente D",33,1],["Cliente E",22,0],["Cliente F",17,1]];
+  var C=document.getElementById("clients"), hc="";
+  cl.forEach(function(r){hc+="<div class='hrow'><div>"+r[0]+"</div><div class='t'><i class='s1' style='width:"+(r[1]/120*100)+"%'></i><i class='s2' style='width:"+(r[2]/120*100)+"%'></i></div><div class='v'>"+(r[1]+r[2])+"</div></div>";});
+  C.innerHTML=hc;
+})();
+</script>
+
+</body>
+</html>

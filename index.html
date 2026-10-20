@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Portafolio Iván Flores</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Concepto: índice de proyectos con el tono de un tablero de operaciones. Índigo profundo como base; magenta y naranja reservados para series de datos. */
+:root{
+  --bg:#f5f5fa; --surface:#ffffff; --fg:#1b1840; --muted:#615f82; --line:#dedcee; --soft:#ecebf7;
+  --s1:#2a2478; --s2:#e0356f; --s3:#f59a3a; --ok:#17734a; --ok-bg:#e1f5ea;
+  --display:"IBM Plex Sans Condensed","IBM Plex Sans","Segoe UI",Arial,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f0e22; --surface:#17163a; --fg:#ecebfa; --muted:#a3a1c8; --line:#2b2958; --soft:#1f1d4a;
+    --s1:#7d74ee; --s2:#ff6b9a; --s3:#ffb15c; --ok:#7fe0aa; --ok-bg:#12332a; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f0e22; --surface:#17163a; --fg:#ecebfa; --muted:#a3a1c8; --line:#2b2958; --soft:#1f1d4a;
+  --s1:#7d74ee; --s2:#ff6b9a; --s3:#ffb15c; --ok:#7fe0aa; --ok-bg:#12332a; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.6;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+.wrap{max-width:1040px;margin:0 auto;padding-block:48px 56px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.12}
+h1{font-size:clamp(38px,7vw,68px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:clamp(22px,3vw,28px);font-weight:700}
+h3{font-size:20px;font-weight:600}
+p{margin:0}
+.eyebrow,.k{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.role{font-family:var(--display);font-size:clamp(18px,2.4vw,24px);font-weight:600;color:var(--s1);margin-top:10px}
+.lead{font-size:17px;max-width:60ch;margin-top:16px}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 28px;margin-top:30px;padding-top:20px;border-top:1px solid var(--line)}
+.meta dt{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.meta dd{margin:2px 0 0;font-weight:500;overflow-wrap:anywhere}
+section{margin-top:56px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:20px}
+.card{display:flex;flex-direction:column;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;color:inherit;text-decoration:none}
+a.card:hover{border-color:var(--s1)}
+a.card:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
+.card .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.where{font-family:var(--mono);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.state{font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;padding:2px 9px;border-radius:99px;background:var(--soft);color:var(--muted);white-space:nowrap}
+.state.on{background:var(--ok-bg);color:var(--ok)}
+.card p{color:var(--muted);font-size:14.5px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.tags span{font-family:var(--mono);font-size:11.5px;padding:2px 8px;border-radius:4px;background:var(--soft);color:var(--fg)}
+.go{font-weight:600;font-size:14px;color:var(--s1)}
+.common{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 36px;margin-top:24px}
+.common h3{font-size:18px;margin-bottom:6px;padding-top:12px;border-top:2px solid var(--s1)}
+.common p{color:var(--muted);font-size:14.5px;max-width:52ch}
+.stmt{font-size:17px;max-width:64ch;margin-top:14px}
+.plain{margin:18px 0 0;padding-left:20px;max-width:68ch;display:flex;flex-direction:column;gap:8px}
+.plain li{color:var(--fg)}
+.ctx{margin-top:12px;max-width:70ch;color:var(--muted);font-size:14.5px;padding:10px 14px;border-left:3px solid var(--s1);background:var(--surface);border-radius:0 8px 8px 0}
+.apply{margin-top:28px;border-left:3px solid var(--s1);padding:4px 0 4px 16px;max-width:72ch}
+.apply .k{margin-bottom:4px}
+.note{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);max-width:80ch}
+@media (max-width:860px){
+  .grid,.common{grid-template-columns:1fr}
+}
+@media (max-width:480px){
+  .wrap{padding-block:32px 40px}
+}
+</style>
+<style>html{background:var(--bg)}body{margin:0}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Portafolio de proyectos</div>
+    <h1 style="margin-top:14px">Iván Flores Morales</h1>
+    <p class="role">Gestión de proveedores y logística operativa</p>
+    <p class="lead">Hola, bienvenido. Aquí dejo tres proyectos en los que he trabajado, dos en ECOSAC y uno en DP World. Nacieron de problemas concretos de la operación de transporte, y en los tres busco lo mismo: que el proceso salga mejor y que lo que se arma se pueda seguir usando. Quedo atento a cualquier comentario.</p>
+    <dl class="meta">
+      <div><dt>Formación</dt><dd>Bachiller en Ingeniería Industrial y Sistemas, Universidad de Piura</dd></div>
+      <div><dt>Experiencia</dt><dd>ECOSAC y DP World Logistics</dd></div>
+      <div><dt>Herramientas</dt><dd>Power BI, Excel, Power Automate, Google Apps Script</dd></div>
+      <div><dt>Contacto</dt><dd>Piura · ivanflores027@hotmail.com</dd></div>
+    </dl>
+  </header>
+
+  <section>
+    <h2>Proyectos</h2>
+    <div class="grid">
+      <a class="card" href="dpworld-paita.html">
+        <div class="top"><span class="where">DP World · Paita</span></div>
+        <h3>Seguimiento de asignación a proveedores de transporte</h3>
+        <p>Reportes para repartir los servicios con equidad entre proveedores, incluidos los asociados a la UTP, con control diario para quien asigna, distribución y facturación para gerencia, y nivel de servicio para el equipo.</p>
+        <div class="tags"><span>Power BI</span><span>Excel</span><span>DAX</span></div>
+        <span class="go">Ver proyecto →</span>
+      </a>
+      <a class="card" href="portal-ecosac.html">
+        <div class="top"><span class="where">ECOSAC</span><span class="state">En implementación</span></div>
+        <h3>Portal de validación para proveedores</h3>
+        <p>Portal web donde los proveedores de transporte de personal validan su programación diaria y verifican la lectura de QR de sus unidades, con seguimiento de quién falta para Coordinación. Una propuesta para mejorar el proceso actual mientras se completa la transición a IBAO.</p>
+        <div class="tags"><span>Google Apps Script</span><span>Google Sheets</span></div>
+        <span class="go">Ver proyecto →</span>
+      </a>
+      <a class="card" href="plaqueo-ecosac.html">
+        <div class="top"><span class="where">ECOSAC</span><span class="state">Piloto</span></div>
+        <h3>App de plaqueo de ingreso de buses</h3>
+        <p>App para registrar cada unidad en tiempo real desde celular o tablet en la tranquera, validar la placa contra IBAO y seguir funcionando sin señal. Piloto mientras se completa la transición a IBAO.</p>
+        <div class="tags"><span>Google Apps Script</span><span>Registro sin conexión</span></div>
+        <span class="go">Ver proyecto →</span>
+      </a>
+    </div>
+  </section>
+
+  <p class="note">Los proyectos se muestran con datos de ejemplo: los nombres y las cifras son ficticios y conservan la estructura y la lógica de los reportes y herramientas reales.</p>
+</div>
+</body>
+</html>
